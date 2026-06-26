@@ -5,12 +5,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Tools
+      - name: Install System Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y cgpt wget unzip curl
 
-      - name: Pull Framework and Recovery Zip
+      - name: Pull Framework and Recovery Assets
         run: |
           wget -q https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
           wget -q https://github.com/sebanc/brunch/releases/download/r126_stable_20240630/brunch_r126_stable_20240630.tar.gz
@@ -30,7 +30,8 @@ jobs:
       - name: Compress For Faster Transfer
         run: tar -cvzf brunch_octopus_r126.tar.gz brunch.img
 
-      - name: Upload to High Capacity Cloud Link
+      - name: Upload via Official WeTransfer Pipeline
         run: |
-          echo "=== STARTING STABLE TRANSFER ==="
-          curl  https://bashupload.com/brunch_octopus_r126.tar.gz --data-binary @brunch_octopus_r126.tar.gz
+          echo "=== STARTING BULLETPROOF TRANSFER ==="
+          curl -sL https://git.io/file-transfer | sh
+          ./transfer wet brunch_octopus_r126.tar.gz
