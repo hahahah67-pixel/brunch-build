@@ -8,7 +8,8 @@ jobs:
       - name: Install System Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y cgpt wget unzip
+          # Added pv here because the install script uses it to track completion percentage
+          sudo apt-get install -y cgpt wget unzip pv
 
       - name: Fetch Active Assets
         run: |
@@ -27,9 +28,10 @@ jobs:
           tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
           rm -f brunch_r126_stable_20240630.tar.gz
 
-      - name: Compile Final Image (Sparse Mode)
+      - name: Compile Final Image (Automated Response Mode)
         run: |
-          sudo bash chromeos-install.sh -src chromeos_octopus.bin -dst ./brunch.img -sparse
+          # 'yes |' handles the interactive prompt so the cloud server doesn't freeze
+          yes | sudo bash chromeos-install.sh -src chromeos_octopus.bin -dst ./brunch.img -sparse
           rm -f chromeos_octopus.bin
 
       - name: Compress File For Download
