@@ -8,24 +8,21 @@ jobs:
       - name: Install System Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y cgpt wget unzip curl
+          sudo apt-get install -y cgpt wget unzip
 
-      - name: Automatically Fetch Fresh Assets (No Dead Links)
+      - name: Fetch Active Assets
         run: |
-          echo "=== FETCHING ACTIVE GOOGLE RECOVERY LINK ==="
-          # This pulls the latest active layout for octopus devices from the official chromeos database
+          echo "=== PULLING RECOVERY LINK ==="
           RECOVERY_URL=$(curl -s https://raw.githubusercontent.com/JayBwls/ChromeOS-Recovery-Marketplace/main/data.json | grep -o 'https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_.*_octopus_recovery_stable-channel_.*\.bin\.zip' | head -n 1)
-          echo "Found active URL: $RECOVERY_URL"
           wget -q "$RECOVERY_URL" -O chromeos_octopus.zip
           
-          echo "=== FETCHING BRUNCH FRAMEWORK ==="
+          echo "=== PULLING BRUNCH FRAMEWORK ==="
           wget -q https://github.com/sebanc/brunch/releases/download/r126_stable_20240630/brunch_r126_stable_20240630.tar.gz
 
       - name: Extract Components
         run: |
           unzip chromeos_octopus.zip
           rm -f chromeos_octopus.zip
-          # Rename whatever version it downloaded to a standardized name for our script
           mv chromeos_*_octopus_recovery_stable-channel_*.bin chromeos_octopus.bin
           tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
           rm -f brunch_r126_stable_20240630.tar.gz
@@ -35,11 +32,12 @@ jobs:
           sudo bash chromeos-install.sh -src chromeos_octopus.bin -dst ./brunch.img -sparse
           rm -f chromeos_octopus.bin
 
-      - name: Compress For Faster Transfer
+      - name: Compress File For Download
         run: tar -cvzf brunch_octopus_r126.tar.gz brunch.img
 
-      - name: Upload via Official WeTransfer Pipeline
-        run: |
-          echo "=== STARTING BULLETPROOF TRANSFER ==="
-          curl -sL https://git.io/file-transfer | sh
-          ./transfer wet brunch_octopus_r126.tar.gz
+      - name: Save To GitHub Storage
+        uses: actions/upload-artifact@v4
+        with:
+          name: completed-brunch-image
+          path: brunch_octopus_r126.tar.gz
+          retention-days: 1
