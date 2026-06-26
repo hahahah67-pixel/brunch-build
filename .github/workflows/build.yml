@@ -5,17 +5,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Free Disk Space Utility
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-          
       - name: Install Tools
         run: |
           sudo apt-get update
@@ -26,16 +15,17 @@ jobs:
           wget -q https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
           wget -q https://github.com/sebanc/brunch/releases/download/r126_stable_20240630/brunch_r126_stable_20240630.tar.gz
 
-      - name: Extract Recovery Bin and Purge Zip Immediately
+      - name: Extract Recovery Bin
         run: |
           unzip chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
           rm -f chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
           tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
           rm -f brunch_r126_stable_20240630.tar.gz
 
-      - name: Compile Final Image
+      - name: Compile Final Image (Using Sparse Space Optimization)
         run: |
-          sudo bash chromeos-install.sh -src chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin -dst ./brunch.img
+          # The -sparse flag stops the script from filling up the GitHub drive with empty space
+          sudo bash chromeos-install.sh -src chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin -dst ./brunch.img -sparse
           rm -f chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin
 
       - name: Compress For Faster Transfer
