@@ -1,0 +1,37 @@
+name: Build Brunch Image
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free Up Server Space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          
+      - name: Install Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cgpt wget unzip curl
+
+      - name: Pull Image Components
+        run: |
+          wget -q https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
+          wget -q https://github.com/sebanc/brunch/releases/download/r126_stable_20240630/brunch_r126_stable_20240630.tar.gz
+
+      - name: Extract Files
+        run: |
+          unzip chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
+          tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
+
+      - name: Compile Final Image
+        run: |
+          sudo bash chromeos-install.sh -src chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin -dst ./brunch.img
+
+      - name: Compress For Faster Transfer
+        run: tar -cvzf brunch_octopus_r126.tar.gz brunch.img
+
+      - name: Upload to Temporary Cloud Link
+        run: |
+          echo "=== STARTING TRANSFER ==="
+          curl --upload-file ./brunch_octopus_r126.tar.gz https://transfer.sh/brunch_octopus_r126.tar.gz
