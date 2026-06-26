@@ -22,16 +22,15 @@ jobs:
           tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
           rm -f brunch_r126_stable_20240630.tar.gz
 
-      - name: Compile Final Image (Using Sparse Space Optimization)
+      - name: Compile Final Image (Sparse Mode)
         run: |
-          # The -sparse flag stops the script from filling up the GitHub drive with empty space
           sudo bash chromeos-install.sh -src chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin -dst ./brunch.img -sparse
           rm -f chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin
 
       - name: Compress For Faster Transfer
         run: tar -cvzf brunch_octopus_r126.tar.gz brunch.img
 
-      - name: Upload to Temporary Cloud Link
+      - name: Upload to High Capacity Cloud Link
         run: |
-          echo "=== STARTING TRANSFER ==="
-          curl --upload-file ./brunch_octopus_r126.tar.gz https://transfer.sh/brunch_octopus_r126.tar.gz
+          echo "=== STARTING STABLE TRANSFER ==="
+          curl  https://bashupload.com/brunch_octopus_r126.tar.gz --data-binary @brunch_octopus_r126.tar.gz
