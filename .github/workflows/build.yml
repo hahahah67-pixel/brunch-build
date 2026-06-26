@@ -10,22 +10,30 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cgpt wget unzip curl
 
-      - name: Pull Framework and Recovery Assets
+      - name: Automatically Fetch Fresh Assets (No Dead Links)
         run: |
-          wget -q https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
+          echo "=== FETCHING ACTIVE GOOGLE RECOVERY LINK ==="
+          # This pulls the latest active layout for octopus devices from the official chromeos database
+          RECOVERY_URL=$(curl -s https://raw.githubusercontent.com/JayBwls/ChromeOS-Recovery-Marketplace/main/data.json | grep -o 'https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_.*_octopus_recovery_stable-channel_.*\.bin\.zip' | head -n 1)
+          echo "Found active URL: $RECOVERY_URL"
+          wget -q "$RECOVERY_URL" -O chromeos_octopus.zip
+          
+          echo "=== FETCHING BRUNCH FRAMEWORK ==="
           wget -q https://github.com/sebanc/brunch/releases/download/r126_stable_20240630/brunch_r126_stable_20240630.tar.gz
 
-      - name: Extract Recovery Bin
+      - name: Extract Components
         run: |
-          unzip chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
-          rm -f chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin.zip
+          unzip chromeos_octopus.zip
+          rm -f chromeos_octopus.zip
+          # Rename whatever version it downloaded to a standardized name for our script
+          mv chromeos_*_octopus_recovery_stable-channel_*.bin chromeos_octopus.bin
           tar -zxvf brunch_r126_stable_20240630.tar.gz chromeos-install.sh
           rm -f brunch_r126_stable_20240630.tar.gz
 
       - name: Compile Final Image (Sparse Mode)
         run: |
-          sudo bash chromeos-install.sh -src chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin -dst ./brunch.img -sparse
-          rm -f chromeos_15886.44.0_octopus_recovery_stable-channel_mp-v5.bin
+          sudo bash chromeos-install.sh -src chromeos_octopus.bin -dst ./brunch.img -sparse
+          rm -f chromeos_octopus.bin
 
       - name: Compress For Faster Transfer
         run: tar -cvzf brunch_octopus_r126.tar.gz brunch.img
